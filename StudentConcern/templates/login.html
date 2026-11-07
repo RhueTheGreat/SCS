@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Login | Student Concern System{% endblock %}
+{% block content %}
+<div class="login-wrap">
+  <div class="page-head">
+    <span class="eyebrow">Secure access</span>
+    <h1>Login</h1>
+    <p>Choose how you want to sign in to the Student Concern System.</p>
+  </div>
+
+  <section class="panel">
+    <form method="post" class="login-form" data-mode="{{ mode }}" data-loading="Authenticating">
+      {% csrf_token %}
+      {{ form.role }}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div class="role-tabs">
+        <button type="button" class="role-tab" data-role="student">Login as Student</button>
+        <button type="button" class="role-tab" data-role="staff">Login as Staff</button>
+      </div>
+      <div class="admin-banner">
+        <span>Administrator access</span>
+        <button type="button" class="btn small" data-role="student">Back</button>
+      </div>
+
+      <div class="form-grid">
+        {% if form.non_field_errors %}
+        <div class="field full" data-for="student staff admin">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="field full" data-for="student staff admin">
+          <label for="{{ form.Fullname.id_for_label }}">{{ form.Fullname.label }}</label>
+          {{ form.Fullname }}
+          {{ form.Fullname.errors }}
+        </div>
+        <div class="field full" data-for="student admin">
+          <label for="{{ form.StudentID.id_for_label }}">{{ form.StudentID.label }}</label>
+          {{ form.StudentID }}
+          {{ form.StudentID.errors }}
+        </div>
+        <div class="field full" data-for="staff">
+          <label for="{{ form.College.id_for_label }}">{{ form.College.label }}</label>
+          {{ form.College }}
+          {{ form.College.errors }}
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" type="submit">Login</button>
+      </div>
+    </form>
+  </section>
+
+  <p class="login-foot"><button type="button" class="secret" data-role="admin" aria-label="Administrator access">&copy;</button> {% now "Y" %} Student Concern System</p>
+</div>
+{% endblock %}

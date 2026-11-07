@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Accounts | Student Concern System{% endblock %}
+{% block content %}
+<div class="page-head head-row">
+  <div>
+    <span class="eyebrow">Administration</span>
+    <h1>Accounts</h1>
+    <p>Register, edit and remove student and staff accounts.</p>
+  </div>
+  <a class="btn" href="{% url 'account_create' %}">+ Register Account</a>
+</div>
+
+<div class="toolbar">
+  <form method="get" class="filters" data-loading="Searching">
+    <div class="search-group">
+      <input type="search" name="q" value="{{ query }}" placeholder="Search by name, student ID or college" aria-label="Search" autocomplete="off">
+      <a class="btn ghost" href="{% url 'accounts_list' %}" title="Clear search and filters">Clear</a>
+      <button class="btn dark" type="submit">Search</button>
+    </div>
+    <select name="role" aria-label="Filter by account type">
+      <option value="">All account types</option>
+      {% for value, label in role_choices %}
+        <option value="{{ value }}" {% if selected_role == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+<p class="result-count">{{ counts.student }} student{{ counts.student|pluralize }} &middot; {{ counts.staff }} staff &middot; {{ counts.admin }} admin{% if filtered %} &middot; showing {{ paginator.count }} of {{ total }}{% endif %}</p>
+
+<section class="panel">
+  {% if accounts %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Full Name</th><th>Account Type</th><th>Student ID</th><th>College</th><th>Registered</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for a in accounts %}
+        <tr>
+          <td class="name" data-label="Full Name">{{ a.Fullname }}</td>
+          <td data-label="Account Type"><span class="tag role-{{ a.role }}">{{ a.get_role_display }}</span></td>
+          <td data-label="Student ID">{% if a.StudentID is not None %}{{ a.StudentID }}{% else %}—{% endif %}</td>
+          <td data-label="College">{% if a.College %}<span class="college-tag">{{ a.College }}</span>{% else %}—{% endif %}</td>
+          <td data-label="Registered">{{ a.created_at|date:"M d, Y" }}</td>
+          <td class="actions" data-label="Actions">
+            {% if a.role != 'admin' %}
+            <a class="btn small" href="{% url 'account_update' a.pk %}">Edit</a>
+            <a class="btn alert small" href="{% url 'account_delete' a.pk %}">Delete</a>
+            {% else %}
+            <span class="muted">Protected</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'pager.html' %}
+  {% else %}
+  <div class="empty">
+    <h2>{% if filtered %}No matching accounts{% else %}No accounts yet{% endif %}</h2>
+    <p>{% if filtered %}Try a different search or clear the filters.{% else %}Register the first student or staff account.{% endif %}</p>
+    <a class="btn" href="{% url 'account_create' %}">Register Account</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

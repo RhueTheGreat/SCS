@@ -1,0 +1,43 @@
+from django.urls import path
+from django.views.generic import RedirectView
+
+from . import views
+
+urlpatterns = [
+    path('', RedirectView.as_view(pattern_name='StudentConcern', permanent=False)),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('StudentConcern/', views.StudentConcern, name='StudentConcern'),
+    path('StudentConcern/export/', views.export_csv, name='export_csv'),
+    path('StudentConcern/add/', views.concern_create, name='concern_create'),
+    path('StudentConcern/<int:pk>/', views.concern_detail, name='concern_detail'),
+    path('StudentConcern/<int:pk>/edit/', views.concern_update, name='concern_update'),
+    path('StudentConcern/<int:pk>/delete/', views.concern_delete, name='concern_delete'),
+    path('StudentConcern/<int:pk>/status/', views.concern_status, name='concern_status'),
+    path('StudentConcern/<int:pk>/reply/', views.concern_reply, name='concern_reply'),
+    path('accounts/', views.accounts_list, name='accounts_list'),
+    path('accounts/add/', views.account_create, name='account_create'),
+    path('accounts/<int:pk>/edit/', views.account_update, name='account_update'),
+    path('accounts/<int:pk>/delete/', views.account_delete, name='account_delete'),
+    path('chat/', views.chat_room, name='chat_room'),
+    path('notifications/', views.notification_counts, name='notification_counts'),
+    path('presence/heartbeat/', views.presence_heartbeat, name='presence_heartbeat'),
+    path('chat/send/', views.chat_send, name='chat_send'),
+    path('chat/feed/', views.chat_feed, name='chat_feed'),
+    path('chat/mention-accounts/', views.chat_mention_accounts, name='chat_mention_accounts'),
+    path('chat/attachment/<str:kind>/<int:pk>/', views.chat_attachment, name='chat_attachment'),
+    path('chat/<int:pk>/edit/', views.chat_edit, name='chat_edit'),
+    path('chat/<int:pk>/delete/', views.chat_delete, name='chat_delete'),
+    path('chat/<int:pk>/reaction/', views.chat_reaction, name='chat_reaction'),
+    path('chat/private/', views.private_chat, name='private_chat'),
+    path('chat/private/<int:pk>/', views.private_thread, name='private_thread'),
+    path('chat/private/<int:pk>/send/', views.private_send, name='private_send'),
+    path('chat/private/<int:pk>/feed/', views.private_feed, name='private_feed'),
+    path('chat/private/<int:pk>/nickname/', views.private_nickname, name='private_nickname'),
+    path('chat/private/<int:pk>/presence/', views.private_presence, name='private_presence'),
+    path('chat/private/message/<int:pk>/edit/', views.private_edit, name='private_edit'),
+    path('chat/private/message/<int:pk>/delete/', views.private_delete, name='private_delete'),
+    path('chat/private/message/<int:pk>/reaction/', views.private_reaction, name='private_reaction'),
+    path('logs/', views.activity_logs, name='activity_logs'),
+    path('logs/feed/', views.activity_feed, name='activity_feed'),
+]

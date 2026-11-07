@@ -1,0 +1,11 @@
+{% if paginator.num_pages > 1 %}
+<nav class="pager" aria-label="Pages">
+  {% if prev_url %}<a class="btn small" href="{{ prev_url }}">Prev</a>{% else %}<span class="btn small disabled">Prev</span>{% endif %}
+  <div class="pager-pages">
+    {% for p in page_links %}
+    {% if p.current %}<span class="tag current">{{ p.n }}</span>{% else %}<a class="btn small" href="{{ p.url }}">{{ p.n }}</a>{% endif %}
+    {% endfor %}
+  </div>
+  {% if next_url %}<a class="btn small" href="{{ next_url }}">Next</a>{% else %}<span class="btn small disabled">Next</span>{% endif %}
+</nav>
+{% endif %}

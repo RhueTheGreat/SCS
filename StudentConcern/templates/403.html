@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Access Denied | Student Concern System{% endblock %}
+{% block content %}
+<div class="page-head">
+  <span class="eyebrow">Restricted</span>
+  <h1>Access Denied</h1>
+  <p>Your account does not have permission to open this page.</p>
+</div>
+
+<section class="panel danger">
+  <div class="empty">
+    <h2>You can't go here</h2>
+    <p>This area is limited to a different type of account.</p>
+    <a class="btn" href="{% url 'StudentConcern' %}">Back to dashboard</a>
+  </div>
+</section>
+{% endblock %}

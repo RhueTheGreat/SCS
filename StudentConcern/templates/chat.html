@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Public Chat | Student Concern System{% endblock %}
+{% block content %}
+<div class="page-head head-row">
+  <div>
+    <span class="eyebrow">Community</span>
+    <h1>Public Chat</h1>
+    <p>Open to students, staff and admins. Be respectful and keep it on topic.</p>
+  </div>
+  <span class="live">Live</span>
+</div>
+
+<section class="panel">
+  {% include 'chat_panel.html' %}
+</section>
+{% endblock %}

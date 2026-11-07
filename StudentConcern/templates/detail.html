@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Concern Details | Student Concern System{% endblock %}
+{% block content %}
+<div class="page-head">
+  <span class="eyebrow">Concern #{{ concern.pk }}</span>
+  <h1>Concern Details</h1>
+  <p>Full record of this concern and the responses to it.</p>
+</div>
+
+<section class="panel">
+  <dl class="detail">
+    <div><dt>Full Name</dt><dd>{{ concern.v_name }}{% if concern.v_own %} <span class="tag you">You</span>{% endif %}</dd></div>
+    <div><dt>Student ID</dt><dd>{{ concern.v_id }}</dd></div>
+    <div><dt>College</dt><dd>{{ concern.v_college }}</dd></div>
+    <div><dt>Category</dt><dd>{{ concern.category }}</dd></div>
+    <div><dt>Priority</dt><dd><span class="tag prio-{{ concern.priority|lower }}">{{ concern.priority }}</span></dd></div>
+    <div><dt>Status</dt><dd><span class="tag status-{{ concern.status|slugify }}">{{ concern.status }}</span></dd></div>
+    <div><dt>Submitted</dt><dd>{{ concern.created_at|date:"M d, Y h:i A" }}</dd></div>
+    <div><dt>Last Updated</dt><dd>{{ concern.updated_at|date:"M d, Y h:i A" }}</dd></div>
+    <div class="full"><dt>Concern</dt><dd class="concern-text">{{ concern.Concern }}</dd></div>
+    {% if concern.evidence %}
+    <div class="full">
+      <dt>Evidence</dt>
+      <dd>
+        <button type="button" class="evidence" data-lightbox="{{ concern.evidence.url }}" aria-label="Enlarge evidence image">
+          <img src="{{ concern.evidence.url }}" alt="Evidence for concern {{ concern.pk }}">
+        </button>
+      </dd>
+    </div>
+    {% endif %}
+  </dl>
+  <div class="form-actions">
+    {% if account.role == 'admin' %}
+    <a class="btn" href="{% url 'concern_update' concern.pk %}">Edit</a>
+    <a class="btn alert" href="{% url 'concern_delete' concern.pk %}">Delete</a>
+    {% endif %}
+    <a class="btn ghost" href="{% url 'StudentConcern' %}">Back</a>
+  </div>
+</section>
+
+<div class="stack">
+  <section class="panel">
+    <h2 class="panel-title">Feedback &amp; Action Reports</h2>
+    {% if replies %}
+    <ul class="thread">
+      {% for r in replies %}
+      <li class="{% if r.kind == 'Action Report' %}report{% endif %}">
+        <div class="thread-meta">
+          <span class="tag">{{ r.kind }}</span>
+          <strong>{{ r.author_name }}</strong>
+          <span class="tag role-{{ r.author_role }}">{{ r.author_role|title }}</span>
+          <span class="when">{{ r.created_at|date:"M d, Y h:i A" }}</span>
+        </div>
+        <p>{{ r.message }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No feedback or action reports yet.</p>
+    {% endif %}
+  </section>
+
+  {% if account.can_manage %}
+  <section class="panel">
+    <h2 class="panel-title">Update Status</h2>
+    <form method="post" action="{% url 'concern_status' concern.pk %}" data-loading="Updating status">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="field">
+          <label for="{{ status_form.status.id_for_label }}">{{ status_form.status.label }}</label>
+          {{ status_form.status }}
+        </div>
+      </div>
+      <div class="form-actions"><button class="btn" type="submit">Update Status</button></div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">Respond</h2>
+    <form method="post" action="{% url 'concern_reply' concern.pk %}" data-loading="Posting">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="field">
+          <label for="{{ reply_form.kind.id_for_label }}">{{ reply_form.kind.label }}</label>
+          {{ reply_form.kind }}
+        </div>
+        <div class="field full">
+          <label for="{{ reply_form.message.id_for_label }}">{{ reply_form.message.label }}</label>
+          {{ reply_form.message }}
+          <div class="counter"></div>
+        </div>
+      </div>
+      <div class="form-actions"><button class="btn" type="submit">Post</button></div>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

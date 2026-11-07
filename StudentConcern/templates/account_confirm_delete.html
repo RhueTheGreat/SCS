@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Delete Account | Student Concern System{% endblock %}
+{% block content %}
+<div class="page-head">
+  <span class="eyebrow">Confirm action</span>
+  <h1>Delete Account</h1>
+  <p>This person will no longer be able to log in. Their submitted concerns and activity logs are kept.</p>
+</div>
+
+<section class="panel danger">
+  <p style="font-size:1.15rem;margin-top:0">
+    Delete the {{ target.get_role_display|lower }} account of <strong>{{ target.Fullname }}</strong>{% if target.StudentID is not None %} (ID {{ target.StudentID }}){% endif %}{% if target.College %}, {{ target.College }}{% endif %}?
+  </p>
+  <form method="post" data-loading="Deleting account">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button class="btn alert" type="submit">Yes, delete</button>
+      <a class="btn ghost" href="{% url 'accounts_list' %}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

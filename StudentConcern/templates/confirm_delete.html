@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Delete Concern | Student Concern System{% endblock %}
+{% block content %}
+<div class="page-head">
+  <span class="eyebrow">Confirm action</span>
+  <h1>Delete Concern</h1>
+  <p>This cannot be undone.</p>
+</div>
+
+<section class="panel danger">
+  <p style="font-size:1.15rem;margin-top:0">
+    Delete the concern from <strong>{{ concern.Fullname }}</strong> (ID {{ concern.StudentID|default:"—" }}, {{ concern.College }})?
+  </p>
+  <form method="post" data-loading="Deleting concern">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button class="btn alert" type="submit">Yes, delete</button>
+      <a class="btn ghost" href="{% url 'StudentConcern' %}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

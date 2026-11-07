@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | Student Concern System{% endblock %}
+{% block content %}
+{% url 'StudentConcern' as home %}
+<div class="page-head">
+  <span class="eyebrow">{{ eyebrow|default:"Concern form" }}</span>
+  <h1>{{ title }}</h1>
+  <p>{{ subtitle }}</p>
+</div>
+
+<section class="panel">
+  <form method="post" enctype="multipart/form-data" data-loading="{{ loading_text }}" {% if account_form %}data-account-form{% endif %}>
+    {% csrf_token %}
+    <div class="form-grid">
+      {% for field in form %}
+      <div class="field {% if field.name in form.full_fields %}full{% endif %}" data-field="{{ field.name }}">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {{ field.errors }}
+        {% if field.name == 'Concern' or field.name == 'message' %}<div class="counter"></div>{% endif %}
+        {% if field.name == 'evidence' %}
+        <p class="help" data-default="JPG, PNG, GIF or WEBP, up to 5 MB.">JPG, PNG, GIF or WEBP, up to 5 MB.</p>
+        {% if form.instance.evidence %}<p class="help">Current image: <a href="{{ form.instance.evidence.url }}" target="_blank" rel="noopener">view</a>. Uploading a new one replaces it.</p>{% endif %}
+        <div class="preview" hidden><img alt="Selected evidence preview"></div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Save</button>
+      <a class="btn ghost" href="{{ cancel_url|default:home }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

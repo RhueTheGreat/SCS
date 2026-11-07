@@ -1,0 +1,39 @@
+<ul class="chat-log" id="chat-log" data-feed="{{ feed_url }}" data-mentions="{% url 'chat_mention_accounts' %}" data-send="{{ send_url }}" data-edit="{{ edit_url }}" data-delete="{{ delete_url }}" data-reaction="{{ reaction_url }}" data-last="{{ last_id }}" data-since="{{ since }}">
+  {% for m in messages_list %}
+  <li class="chat-msg{% if m.own %} own{% endif %}{% if m.role == 'admin' %} admin-message{% endif %}" data-id="{{ m.id }}"{% if m.can_edit %} data-seconds="{{ m.seconds_left }}"{% endif %}{% if m.admin_delete %} data-admin="1"{% endif %}>
+    {% if m.role != 'admin' %}<span class="when message-time">{{ m.time }}</span>{% endif %}
+    <div class="chat-bubble">
+      <div class="thread-meta">
+        {% if m.role == 'admin' %}<span class="tag role-admin">Admin</span>
+        {% elif not m.own %}<span class="tag role-{{ m.role }}">{{ m.role_label }}</span><span class="message-author"><strong>{{ m.name }}</strong>{% if m.student_id %}<small class="person-id">ID {{ m.student_id }}</small>{% endif %}</span>{% endif %}
+        {% if m.edited %}<span class="edited">edited</span>{% endif %}
+        {% if m.can_edit or m.can_delete %}<span class="chat-actions">{% if m.can_edit %}<span class="chat-timer">{{ m.seconds_left }}s</span><button type="button" class="chat-act" data-act="edit">Edit</button>{% endif %}{% if m.can_delete %}<button type="button" class="chat-act" data-act="delete">Delete</button>{% endif %}</span>{% endif %}
+      </div>
+      {% if m.reply %}<div class="chat-reply-quote"><span class="reply-quote-label">↪ {{ m.reply.name }} · </span><span class="reply-quote-text">{{ m.reply.text }}</span></div>{% endif %}
+      {% if m.text %}<p class="chat-message-text">{{ m.text }}</p>{% endif %}
+      {% if m.attachment_url %}
+        {% if m.attachment_type == 'image' %}<a class="chat-attachment-image" href="{{ m.attachment_url }}" target="_blank" rel="noopener"><img src="{{ m.attachment_url }}" alt="{{ m.attachment_name }}"></a>
+        {% elif m.attachment_type == 'audio' %}<audio class="chat-audio" controls preload="metadata" src="{{ m.attachment_url }}"></audio>
+        {% else %}<a class="chat-file-link" href="{{ m.attachment_url }}" target="_blank" rel="noopener" download="{{ m.attachment_name }}">📎 {{ m.attachment_name }}</a>{% endif %}
+      {% endif %}
+      {% if m.role == 'admin' %}<span class="when message-time admin-message-time">{{ m.time }}</span>{% endif %}
+      {% if m.reactions %}<div class="message-reactions">{% for r in m.reactions %}<button type="button" class="reaction-chip" data-reaction="{{ r.reaction }}"><span class="emoji-mark" data-emoji="{{ r.reaction }}"></span><small>{{ r.count }}</small></button>{% endfor %}</div>{% endif %}<div class="message-tools">{% if m.can_reply %}<button type="button" class="chat-reply-btn" data-act="reply">↩ Reply</button>{% endif %}<button type="button" class="chat-react-btn" data-act="react" aria-label="React to message">＋ React</button></div>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+<div class="empty" id="chat-empty" {% if messages_list %}hidden{% endif %}>
+  <h2>No messages yet</h2>
+  <p>Say hello and start the conversation.</p>
+</div>
+<p class="help bad" id="chat-error" hidden></p>
+<div id="replying-to" class="replying-to" hidden><span id="replying-label"></span><button type="button" id="cancel-reply" aria-label="Cancel reply">×</button></div>
+<form method="post" action="{{ send_url }}" class="chat-form" id="chat-form" autocomplete="off" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="hidden" name="reply_to" value="">
+  <div class="emoji-picker-wrap"><button class="emoji-picker-toggle" type="button" aria-label="Insert emoji" aria-expanded="false">☺</button><div class="emoji-picker" hidden><div class="emoji-tabs"><button type="button" class="active" data-emoji-tab="faces">Expressions</button><button type="button" data-emoji-tab="hands">Gestures &amp; Symbols</button><button type="button" data-emoji-tab="fun">Fun</button></div><div class="emoji-grid" data-emoji-grid="faces"></div><div class="emoji-grid" data-emoji-grid="hands" hidden></div><div class="emoji-grid" data-emoji-grid="fun" hidden></div></div></div><div class="chat-compose-input"><input type="text" name="message" maxlength="{{ max_length }}" placeholder="{{ placeholder }}" aria-label="Message" aria-autocomplete="list" aria-controls="mention-suggestions"><div class="mention-suggestions" id="mention-suggestions" role="listbox" hidden></div></div>
+  <label class="chat-attach-btn" title="Attach file" aria-label="Attach file"><svg class="chat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.4 11.1-8.5 8.5a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><input type="file" name="attachment" id="chat-attachment" hidden></label>
+  <button class="chat-mic-btn" type="button" id="chat-mic" title="Record voice message" aria-label="Record voice message"><svg class="chat-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg></button>
+  <button class="btn" type="submit">Send</button>
+</form>
+<p class="help">You can edit or delete a message for 30 seconds after sending it. After that it is permanent. Attachments up to 20 MB are supported.</p><div class="chat-pending-attachment" id="chat-attachment-name" role="status" aria-live="polite" hidden><span class="chat-pending-icon" aria-hidden="true"><svg class="chat-icon" viewBox="0 0 24 24"><path d="m21.4 11.1-8.5 8.5a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></span><span class="chat-pending-text" id="chat-attachment-status"></span><button type="button" id="chat-attachment-remove" class="chat-pending-remove" aria-label="Remove attachment">Remove</button></div>

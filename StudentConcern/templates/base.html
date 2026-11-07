@@ -1,0 +1,82 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Student Concern System{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="64x64" href="{% static 'StudentConcern/img/favicon.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'StudentConcern/img/scss-logo.png' %}">
+  <link rel="stylesheet" href="{% static 'StudentConcern/css/style.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="{% url 'StudentConcern' %}" aria-label="Student Concern System home">
+        <img class="brand-mark" src="{% static 'StudentConcern/img/scss-logo.png' %}" alt="SCSS logo">
+        <span class="brand-title">Student Concern System</span>
+      </a>
+      {% if account and account.role == 'admin' %}
+      {% with current=request.resolver_match.url_name %}
+      <nav class="nav">
+        <a href="{% url 'StudentConcern' %}" {% if current == 'StudentConcern' %}class="active"{% endif %}>All Concerns</a>
+        <a href="{% url 'concern_create' %}" {% if current == 'concern_create' %}class="active"{% endif %}>Submit Concern</a>
+        <a href="{% url 'chat_room' %}" {% if current == 'chat_room' %}class="active"{% endif %}>Public Chat{% if unread_public %}<span class="badge notice-badge" data-count="public">{{ unread_public }}</span>{% else %}<span class="badge notice-badge" data-count="public" hidden></span>{% endif %}</a>
+        <a href="{% url 'accounts_list' %}" {% if current == 'accounts_list' or current == 'account_create' or current == 'account_update' or current == 'account_delete' %}class="active"{% endif %}>Accounts</a>
+        <a href="{% url 'activity_logs' %}" {% if current == 'activity_logs' %}class="active"{% endif %}>Activity Logs</a>
+      </nav>
+      {% endwith %}
+      {% endif %}
+      {% if account %}
+      <div class="user-chip">
+        <span class="user-name">{{ account.Fullname }}</span>
+        <span class="tag role-{{ account.role }}">{{ account.get_role_display }}</span>
+        <form method="post" action="{% url 'logout' %}" data-loading="Signing out">
+          {% csrf_token %}
+          <button class="btn small" type="submit">Logout</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="shell{% if account and account.role != 'admin' %} has-side{% endif %}">
+  {% if account and account.role != 'admin' %}
+  {% with current=request.resolver_match.url_name %}
+  <aside class="sidenav" aria-label="Main menu">
+    <h2 class="side-title">Menu</h2>
+    <nav class="side-links" data-notifications="{% url 'notification_counts' %}" data-active="{% if current == 'StudentConcern' or current == 'concern_create' or current == 'concern_detail' %}concerns{% elif current == 'chat_room' %}public{% elif current == 'private_chat' or current == 'private_thread' %}private{% endif %}">
+      <a class="side-link {% if current == 'StudentConcern' or current == 'concern_create' or current == 'concern_detail' %}active{% endif %}" href="{% url 'StudentConcern' %}">Concerns{% if unread_concerns %}<span class="badge notice-badge" data-count="concerns">{{ unread_concerns }}</span>{% else %}<span class="badge notice-badge" data-count="concerns" hidden></span>{% endif %}</a>
+      <a class="side-link {% if current == 'chat_room' %}active{% endif %}" href="{% url 'chat_room' %}">Public Chat{% if unread_public %}<span class="badge notice-badge" data-count="public">{{ unread_public }}</span>{% else %}<span class="badge notice-badge" data-count="public" hidden></span>{% endif %}</a>
+      <a class="side-link {% if current == 'private_chat' or current == 'private_thread' %}active{% endif %}" href="{% url 'private_chat' %}">Private Chat{% if unread_private %}<span class="badge notice-badge" data-count="private">{{ unread_private }}</span>{% else %}<span class="badge notice-badge" data-count="private" hidden></span>{% endif %}</a>
+    </nav>
+  </aside>
+  {% endwith %}
+  {% endif %}
+  <main>
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}<li class="{{ message.tags }}"><span>{{ message }}</span><button type="button" aria-label="Dismiss">&times;</button></li>{% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  </div>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <img alt="Evidence image">
+    <button class="btn small" type="button">Close</button>
+  </div>
+
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader-box">
+      <div class="loader-text" id="loader-text">Loading</div>
+      <div class="loader-bar"><span></span></div>
+    </div>
+  </div>
+
+  <script src="{% static 'StudentConcern/js/app.js' %}" data-heartbeat="{% url 'presence_heartbeat' %}"></script>
+</body>
+</html>

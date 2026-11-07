@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}{% if scoped %}My Concerns{% else %}All Concerns{% endif %} | Student Concern System{% endblock %}
+{% block content %}
+<div class="page-head head-row">
+  <div>
+    <span class="eyebrow">{% if scoped %}Your submissions{% else %}Overview{% endif %}</span>
+    <h1>{% if scoped %}My Concerns{% else %}Student Concerns{% endif %}</h1>
+    <p>{% if scoped %}Track the status and responses for every concern you have submitted.{% else %}Every concern submitted, organized by status{% if college_filter %} and college{% endif %}.{% endif %}</p>
+  </div>
+  <div class="head-actions">
+    {% if account.can_manage %}<a class="btn" href="{% url 'export_csv' %}{{ export_url }}">Export CSV</a>{% endif %}
+    <a class="btn" href="{% url 'concern_create' %}">+ Submit a Concern</a>
+  </div>
+</div>
+
+<div class="layout{% if not show_colleges %} solo{% endif %}">
+{% if show_colleges %}
+<aside class="sidebar" aria-label="Filters">
+  <h2 class="side-title">Colleges</h2>
+  <div class="stats">
+  <a class="stat {% if not selected_college %}active{% endif %}" href="{{ total_url }}">
+    <span class="num">{{ total }}</span><span class="label">Total concerns</span>
+  </a>
+  {% for s in college_stats %}
+  <a class="stat {% if s.active %}active{% endif %}" href="{{ s.url }}">
+    <span class="num">{{ s.count }}</span><span class="label">{{ s.name }}</span>
+  </a>
+  {% endfor %}
+  </div>
+  <h2 class="side-title">Status</h2>
+  <div class="stats compact">
+  {% for s in status_stats %}
+  <a class="stat {% if s.active %}active{% endif %}" href="{{ s.url }}">
+    <span class="num">{{ s.count }}</span><span class="label">{{ s.name }}</span>
+  </a>
+  {% endfor %}
+  </div>
+</aside>
+{% endif %}
+
+<div class="content">
+<div class="toolbar">
+  <form method="get" class="filters" data-loading="Searching">
+    <div class="search-group">
+      <input type="search" name="q" value="{{ query }}" placeholder="{% if account.role == 'admin' %}Search name, ID or concern{% else %}Search concerns{% endif %}" aria-label="Search" autocomplete="off">
+      <a class="btn ghost" href="{{ clear_url }}" title="Clear search and filters">Clear</a>
+      <button class="btn dark" type="submit">Search</button>
+    </div>
+    <select name="mine" aria-label="Show concerns">
+      <option value="">All concerns</option>
+      <option value="1" {% if params.mine %}selected{% endif %}>My concerns</option>
+    </select>
+    {% if college_filter %}
+    <select name="college" aria-label="Filter by college">
+      <option value="">All colleges</option>
+      {% for value, label in college_choices %}
+        <option value="{{ value }}" {% if selected_college == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+    <select name="status" aria-label="Filter by status">
+      <option value="">All statuses</option>
+      {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="category" aria-label="Filter by category">
+      <option value="">All categories</option>
+      {% for value, label in category_choices %}
+        <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+{% if filtered %}<p class="result-count">Showing {{ paginator.count }} of {{ total }} concern{{ total|pluralize }}</p>{% endif %}
+
+<section class="panel">
+  {% if concerns %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Full Name</th><th>Student ID</th><th>College</th><th>Category</th><th>Status</th><th>Concern</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for c in concerns %}
+        <tr>
+          <td class="name" data-label="Full Name">{{ c.v_name }}{% if c.v_own %} <span class="tag you">You</span>{% endif %}</td>
+          <td data-label="Student ID">{{ c.v_id }}</td>
+          <td data-label="College"><span class="college-tag">{{ c.v_college }}</span></td>
+          <td data-label="Category">{{ c.category }}<div class="cell-sub"><span class="tag prio-{{ c.priority|lower }}">{{ c.priority }}</span></div></td>
+          <td data-label="Status"><span class="tag status-{{ c.status|slugify }}">{{ c.status }}</span></td>
+          <td data-label="Concern">{{ c.Concern|truncatechars:50 }}{% if c.evidence %} <span class="tag">Photo</span>{% endif %}</td>
+          <td class="actions" data-label="Actions">
+            <a class="btn dark small" href="{% url 'concern_detail' c.pk %}">View</a>
+            {% if account.role == 'admin' %}
+            <a class="btn small" href="{% url 'concern_update' c.pk %}">Edit</a>
+            <a class="btn alert small" href="{% url 'concern_delete' c.pk %}">Delete</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'pager.html' %}
+  {% else %}
+  <div class="empty">
+    <h2>{% if filtered %}No matching concerns{% else %}No concerns yet{% endif %}</h2>
+    <p>{% if filtered %}Try a different search or clear the filters.{% else %}Be the first to submit a concern.{% endif %}</p>
+    <a class="btn" href="{% url 'concern_create' %}">Submit a Concern</a>
+  </div>
+  {% endif %}
+</section>
+</div>
+</div>
+{% endblock %}

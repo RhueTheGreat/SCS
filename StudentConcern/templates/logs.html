@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Activity Logs | Student Concern System{% endblock %}
+{% block content %}
+<div class="page-head head-row">
+  <div>
+    <span class="eyebrow">Administration</span>
+    <h1>Activity Logs</h1>
+    <p>Every action on the system, recorded with the Student ID of whoever performed it.</p>
+  </div>
+  {% if live %}<span class="live">Live</span>{% endif %}
+</div>
+
+<div class="toolbar">
+  <form method="get" class="filters" data-loading="Searching">
+    <div class="search-group">
+      <input type="search" name="q" value="{{ query }}" placeholder="Search by name, student ID, detail or IP" aria-label="Search" autocomplete="off">
+      <a class="btn ghost" href="{% url 'activity_logs' %}" title="Clear search and filters">Clear</a>
+      <button class="btn dark" type="submit">Search</button>
+    </div>
+    <select name="role" aria-label="Filter by account type">
+      <option value="">All account types</option>
+      {% for value, label in role_choices %}
+        <option value="{{ value }}" {% if selected_role == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="action" aria-label="Filter by activity">
+      <option value="">All activity</option>
+      {% for value, label in action_choices %}
+        <option value="{{ value }}" {% if selected_action == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+{% if filtered %}<p class="result-count">Showing {{ paginator.count }} of {{ total }} record{{ total|pluralize }}</p>{% endif %}
+
+<section class="panel">
+  <div class="table-wrap">
+    <table id="log-table" data-feed="{% url 'activity_feed' %}{{ feed_qs }}" data-last="{{ last_id }}" data-live="{% if live %}1{% else %}0{% endif %}">
+      <thead>
+        <tr><th>Time</th><th>Student ID</th><th>Full Name</th><th>Account Type</th><th>Activity</th><th>Details</th><th>IP</th></tr>
+      </thead>
+      <tbody>
+      {% for l in logs %}
+        <tr>
+          <td data-label="Time">{{ l.created_at|date:"M d, Y h:i:s A" }}</td>
+          <td data-label="Student ID">{{ l.StudentID|default:"—" }}</td>
+          <td class="name" data-label="Full Name">{{ l.Fullname|default:"—" }}</td>
+          <td data-label="Account Type"><span class="tag">{{ l.role|title|default:"—" }}</span></td>
+          <td data-label="Activity"><span class="tag">{{ l.get_action_display }}</span></td>
+          <td data-label="Details">{{ l.detail|default:"—" }}</td>
+          <td data-label="IP">{{ l.ip|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="empty" id="log-empty" {% if logs %}hidden{% endif %}>
+    <h2>No activity recorded</h2>
+    <p>{% if filtered %}Nothing matches these filters yet. New matching activity will appear here live.{% else %}Activity will appear here as it happens.{% endif %}</p>
+  </div>
+  {% include 'pager.html' %}
+</section>
+{% endblock %}

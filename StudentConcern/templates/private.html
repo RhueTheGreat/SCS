@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Private Chat | Student Concern System{% endblock %}
+{% block content %}
+<div class="page-head head-row">
+  <div>
+    <span class="eyebrow">Direct messages</span>
+    <h1>Private Chat</h1>
+    <p>Message another student or staff member. Only you and the other person can see these conversations.</p>
+  </div>
+  {% if partner %}<span class="live">Live</span>{% endif %}
+</div>
+
+<div class="dm">
+  <section class="panel dm-list">
+    <form method="get" action="{% url 'private_chat' %}" class="dm-search">
+      <input type="search" name="q" value="{{ query }}" placeholder="ID or full name" aria-label="Search people" autocomplete="off">
+      <button class="btn small" type="submit">Search</button>
+    </form>
+
+    {% if results is not None %}
+    <h2 class="side-title">Results</h2>
+    {% if results %}
+    <ul class="people">
+      {% for r in results %}
+      <li><a class="person" href="{% url 'private_thread' r.id %}"><span class="person-name">{{ r.fullname }}</span><small class="person-id">ID {{ r.student_id|default:"—" }}</small><span class="tag role-{{ r.role }}">{{ r.role_label }}</span></a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted dm-note">No student or staff member matches "{{ query }}".</p>
+    {% endif %}
+    <a class="btn small" href="{% if partner %}{% url 'private_thread' partner.pk %}{% else %}{% url 'private_chat' %}{% endif %}">Clear search</a>
+    {% else %}
+    <h2 class="side-title">Conversations</h2>
+    {% if threads %}
+    <ul class="people">
+      {% for t in threads %}
+      <li>
+        <a class="person {% if partner and partner.pk == t.id %}active{% endif %}" href="{% url 'private_thread' t.id %}">
+          <span class="person-main">
+            <span class="presence-dot {% if t.online %}online{% else %}offline{% endif %}" aria-label="{% if t.online %}Online{% else %}Offline{% endif %}"></span><span class="person-name">{{ t.nickname|default:t.fullname }}</span><small class="person-id">ID {{ t.student_id|default:"—" }}</small>
+            <span class="person-preview">{{ t.preview }}</span>
+          </span>
+          <span class="person-side">
+            <span class="tag role-{{ t.role }}">{{ t.role_label }}</span>
+            {% if t.unread %}<span class="badge">{{ t.unread }}</span>{% endif %}
+          </span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted dm-note">No conversations yet. Search for a student or staff member to start one.</p>
+    {% endif %}
+    {% endif %}
+  </section>
+
+  <section class="panel dm-thread" {% if partner %}data-presence="{{ presence_url }}" data-nickname="{{ nickname_url }}" data-online="{{ partner_online|yesno:'1,0' }}"{% endif %}>
+    {% if partner %}
+    <div class="dm-head">
+      <span class="presence-dot {% if partner_online %}online{% else %}offline{% endif %}" id="partner-presence" aria-label="{% if partner_online %}Online{% else %}Offline{% endif %}"></span><div class="dm-person"><strong id="partner-display-name" data-fullname="{{ partner_fullname|escape }}">{{ partner_nickname|default:partner_fullname }}</strong><small class="person-id">ID {{ partner_student_id|default:"—" }}</small></div>
+      <span class="tag role-{{ partner.role }}">{{ partner.role|title }}</span>
+      <button type="button" class="btn small" id="nickname-edit">Edit nickname</button>
+    </div>
+    <form id="nickname-form" class="nickname-form" hidden>
+      {% csrf_token %}<label for="nickname-input">Nickname for this person</label>
+      <input id="nickname-input" maxlength="60" value="{{ partner_nickname }}" placeholder="Leave blank to use full name">
+      <button class="btn small" type="submit">Save</button><button class="btn small secondary" type="button" id="nickname-reset">Reset</button>
+      <span class="help" id="nickname-status" aria-live="polite"></span>
+    </form>
+    {% include 'chat_panel.html' %}
+    {% else %}
+    <div class="empty">
+      <h2>Pick a conversation</h2>
+      <p>Choose someone from the list, or search by Student ID or full name to start a new one.</p>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
